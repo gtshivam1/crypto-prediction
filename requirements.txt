@@ -1,0 +1,14 @@
+requests
+pandas
+sqlalchemy
+psycopg2-binary
+python-dotenv
+scikit-learn
+textblob
+matplotlib
+streamlit
+newsapi-python
+seaborn
+ta
+vaderSentiment
+numpy
