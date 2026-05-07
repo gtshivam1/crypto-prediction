@@ -1,7 +1,11 @@
 import pandas as pd
 import numpy as np
 from sqlalchemy import create_engine
-from xgboost import XGBRegressor
+try:
+    from xgboost import XGBRegressor
+except ModuleNotFoundError:
+    XGBRegressor = None
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
 import ta
@@ -54,6 +58,10 @@ def build_model():
         coin_df["next_price"]    = coin_df["price"].shift(-1)
         coin_df = coin_df.dropna()
 
+        if len(coin_df) < 10:
+            print(f"Skipping {coin}: not enough clean rows to train.")
+            continue
+
         # Sentiment
         sentiment = sentiment_df[sentiment_df["coin_id"] == coin]["avg_sentiment"].values
         sentiment_score = sentiment[0] if len(sentiment) > 0 else 0
@@ -69,17 +77,30 @@ def build_model():
         ]]
         y = coin_df["next_price"]
 
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        if len(X) < 20:
+            X_train, X_test, y_train, y_test = X, X, y, y
+        else:
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=0.2, random_state=42
+            )
 
-        model = XGBRegressor(
-        n_estimators=200,
-        max_depth=6,
-        learning_rate=0.05,
-        subsample=0.8,
-        colsample_bytree=0.8,
-        random_state=42,
-        n_jobs=-1
-        )
+        if XGBRegressor is not None:
+            model = XGBRegressor(
+                n_estimators=200,
+                max_depth=6,
+                learning_rate=0.05,
+                subsample=0.8,
+                colsample_bytree=0.8,
+                random_state=42,
+                n_jobs=-1,
+            )
+        else:
+            print("xgboost is not installed. Using RandomForestRegressor fallback.")
+            model = RandomForestRegressor(
+                n_estimators=200,
+                random_state=42,
+                n_jobs=-1,
+            )
         
         model.fit(X_train, y_train)
 
@@ -130,6 +151,9 @@ def build_model():
         print(f"✅ {coin} — Current: ${last_row['price']:,.2f} | Predicted: ${tomorrow_price:,.2f} | Change: {change_pct:.2f}% | RSI: {last_row['rsi']:.2f} | MAE: ${mae:,.2f}")
 
     results_df = pd.DataFrame(results)
+    if results_df.empty:
+        return results_df
+
     results_df["prediction_date"] = pd.Timestamp.today().date()
     results_df.to_sql("predictions", engine, if_exists="replace", index=False)
     print("✅ Predictions saved to database!")
