@@ -154,7 +154,7 @@ Crypto markets are highly volatile — always do your own research.
 ---
 
 ## 👨‍💻 Author
-**Your Name**
+**SHiVAM**
 - GitHub: [@gtshivam1](https://github.com/gtshivam1)
 
 ---
