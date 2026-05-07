@@ -7,7 +7,7 @@ prices for the top 5 cryptocurrencies.
 ---
 
 ## 🚀 Live Demo
-[Click here to view the dashboard](#) ← replace with your Streamlit link
+[Click here to view the dashboard](https://cryptopredictionxyz.streamlit.app/) ← replace with your Streamlit link
 
 ---
 
