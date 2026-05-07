@@ -110,8 +110,18 @@ def render_chart(fig):
 
 
 @st.cache_data(ttl=300, show_spinner=False)
-def load_all_data():
-    predictions_df = build_model()
+def load_all_data(force_retrain=False):
+    if force_retrain:
+        predictions_df = build_model()
+    else:
+        try:
+            predictions_df = pd.read_sql("SELECT * FROM predictions", engine)
+        except Exception:
+            predictions_df = pd.DataFrame()
+
+        if predictions_df.empty:
+            predictions_df = build_model()
+
     prices_df = pd.read_sql("SELECT * FROM historical_prices", engine)
     sentiment_df = pd.read_sql("SELECT * FROM news_sentiment", engine)
 
@@ -186,9 +196,21 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+with st.sidebar:
+    st.header("Controls")
+    force_retrain = st.button("Retrain model", type="primary")
+    if st.button("Clear dashboard cache"):
+        st.cache_data.clear()
+        st.rerun()
+
 try:
-    with st.spinner("Running AI prediction model and loading market data..."):
-        predictions, prices, sentiment = load_all_data()
+    loading_message = (
+        "Retraining AI model and loading market data..."
+        if force_retrain
+        else "Loading saved predictions and market data..."
+    )
+    with st.spinner(loading_message):
+        predictions, prices, sentiment = load_all_data(force_retrain)
 except Exception as exc:
     st.error("Dashboard data could not be loaded.")
     st.exception(exc)
@@ -197,6 +219,12 @@ except Exception as exc:
 if predictions.empty:
     st.warning("No predictions were generated. Check your historical price data.")
     st.stop()
+
+if "prediction_date" in predictions.columns and predictions["prediction_date"].notna().any():
+    latest_prediction_date = predictions["prediction_date"].dropna().max()
+    st.caption(f"Showing saved predictions from {latest_prediction_date}. Use Retrain model in the sidebar to refresh them.")
+else:
+    st.caption("Showing saved predictions. Use Retrain model in the sidebar to refresh them.")
 
 required_prediction_cols = {
     "coin_id",
