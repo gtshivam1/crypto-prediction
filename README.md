@@ -1,13 +1,13 @@
 # 🤖 Crypto AI Prediction Dashboard
 
-An AI-powered cryptocurrency prediction system that combines Machine Learning, 
-Technical Analysis, News Sentiment and Real-time Alerts to predict next day 
+An AI-powered cryptocurrency prediction system that combines Machine Learning,
+Technical Analysis, News Sentiment and Real-time Alerts to predict next day
 prices for the top 5 cryptocurrencies.
 
 ---
 
 ## 🚀 Live Demo
-[Click here to view the dashboard](https://cryptopredictionxyz.streamlit.app/) ← replace with your Streamlit link
+[Click here to view the dashboard](https://cryptopredictionxyz.streamlit.app)
 
 ---
 
@@ -28,9 +28,9 @@ Historical Prices (365 days)
         +
 News Sentiment Score (VADER)
         +
-Technical Indicators (RSI, MACD, BB)
+Technical Indicators (RSI, MACD, Bollinger Bands)
         ↓
-Random Forest ML Model
+XGBoost ML Model (17 features)
         ↓
 Tomorrow's Predicted Price
 ```
@@ -45,11 +45,54 @@ Tomorrow's Predicted Price
 | CoinGecko API | Historical & live crypto prices |
 | NewsAPI | Latest crypto news |
 | VADER | News sentiment analysis |
-| Scikit-learn | Random Forest ML model |
-| pandas-ta | Technical indicators |
-| PostgreSQL | Data storage |
+| XGBoost | ML prediction model |
+| ta (Technical Analysis) | RSI, MACD, Bollinger Bands |
+| PostgreSQL / Supabase | Cloud database |
 | Streamlit | Interactive dashboard |
 | Telegram Bot API | Real-time alerts |
+
+---
+
+## 🤖 Why XGBoost?
+
+We upgraded from Random Forest to **XGBoost** because:
+- ⚡ Faster training
+- 🎯 More accurate predictions (lower MAE)
+- 🛡️ Better handling of overfitting
+- 💼 Used by professional trading firms
+
+### Model Performance (MAE):
+| Coin | MAE |
+|---|---|
+| Bitcoin | $1,767 |
+| Ethereum | $108 |
+| BNB | $17 |
+| XRP | $0.08 |
+| Solana | $5.51 |
+
+---
+
+## 📈 17 Features Used by the Model
+
+| Feature | Description |
+|---|---|
+| prev_price | Yesterday's price |
+| prev_price_2 | Price 2 days ago |
+| prev_price_3 | Price 3 days ago |
+| price_change | Daily % change |
+| ma7 | 7 day moving average |
+| ma30 | 30 day moving average |
+| ma7_ma30_diff | Gap between MA7 and MA30 |
+| volatility | 7 day price volatility |
+| volume_change | Trading volume change |
+| rsi | Relative Strength Index |
+| macd | MACD line |
+| macd_signal | MACD signal line |
+| macd_diff | MACD histogram |
+| bb_upper | Bollinger Band upper |
+| bb_lower | Bollinger Band lower |
+| bb_width | Bollinger Band width |
+| sentiment | News sentiment score |
 
 ---
 
@@ -61,7 +104,7 @@ crypto-prediction/
 ├── extract_news.py      # Fetches latest crypto news
 ├── sentiment.py         # VADER sentiment scoring
 ├── transform.py         # Loads prices into database
-├── model.py             # Random Forest prediction model
+├── model.py             # XGBoost prediction model
 ├── event_detector.py    # Real-time Telegram alert bot
 ├── dashboard.py         # Streamlit dashboard
 ├── requirements.txt     # Project dependencies
@@ -93,52 +136,31 @@ pip install -r requirements.txt
 ```
 COINGECKO_API_KEY=your_coingecko_key
 NEWS_API_KEY=your_newsapi_key
-DB_URL=postgresql://postgres:yourpassword@localhost/crypto_prediction
+DB_URL=your_supabase_connection_string
 TELEGRAM_TOKEN=your_telegram_bot_token
 TELEGRAM_CHAT_ID=your_chat_id
 ```
 
-**5. Create PostgreSQL database**
-```sql
-CREATE DATABASE crypto_prediction;
-```
-
-**6. Run the pipeline**
+**5. Run the pipeline**
 ```bash
 python transform.py       # Load historical prices
 python sentiment.py       # Analyze news sentiment
 python model.py           # Train model & save predictions
 ```
 
-**7. Start the dashboard**
+**6. Start the dashboard**
 ```bash
 streamlit run dashboard.py
 ```
 
-**8. Start Telegram alerts (optional)**
+**7. Start Telegram alerts**
 ```bash
 python event_detector.py
 ```
 
 ---
 
-## 📈 Features Explained
-
-### 🔮 Price Prediction
-Uses Random Forest Regressor trained on 365 days of data with 17 features
-including previous prices, moving averages, technical indicators and sentiment.
-
-### 📰 Sentiment Analysis
-Fetches latest news for each coin and scores each headline using VADER
-(Valence Aware Dictionary and sEntiment Reasoner) which is specifically
-designed for financial and social media text.
-
-### 📊 Technical Indicators
-- **RSI** — Identifies overbought (>70) or oversold (<30) conditions
-- **MACD** — Shows momentum and trend direction
-- **Bollinger Bands** — Shows price volatility range
-
-### 🚨 Alert System
+## 🚨 Alert System
 Monitors news every 15 minutes and sends instant Telegram alerts for:
 - 🚨 Critical events (hacks, bans, exploits)
 - ⚠️ Major events (regulations, government actions)
@@ -154,8 +176,9 @@ Crypto markets are highly volatile — always do your own research.
 ---
 
 ## 👨‍💻 Author
-**SHiVAM**
+**Your Name**
 - GitHub: [@gtshivam1](https://github.com/gtshivam1)
+
 
 ---
 
